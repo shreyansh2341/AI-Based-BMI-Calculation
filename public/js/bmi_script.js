@@ -1,0 +1,188 @@
+const bmiText = document.getElementById("bmi");
+const descText = document.getElementById("desc");
+const form = document.querySelector("form");
+
+form.addEventListener("submit", handleSubmit);
+form.addEventListener("reset", handleReset);
+
+function handleReset() {
+  bmiText.textContent = 0;
+  bmiText.className = "";
+  descText.textContent = "N/A";
+  document.getElementById('bot-interface').style.display = 'none';
+  document.getElementById('chatbot-tag').style.display = 'none';
+}
+
+function handleSubmit(e) {
+  e.preventDefault();
+
+  const weight = parseFloat(form.weight.value);
+  const height = parseFloat(form.height.value);
+
+  if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
+    alert("Please enter a valid weight and height");
+    return;
+  }
+
+  const heightInMeters = height / 100;
+  const bmi = weight / Math.pow(heightInMeters, 2);
+  const desc = interpretBMI(bmi);
+
+  bmiText.textContent = bmi.toFixed(2);
+  bmiText.className = desc;
+  descText.innerHTML = `You are <strong>${desc}</strong>`;
+
+  localStorage.setItem('bmi', bmi.toFixed(2));
+
+  document.getElementById('bot-interface').style.display = 'block';
+  document.getElementById('bot-text').innerHTML = "Great! Now that we've calculated your BMI, would you like to see some diet options or exercise plans?";
+  document.getElementById('bot-options').style.display = 'block';
+
+  // Show the chatbot tag
+  document.getElementById('chatbot-tag').style.display = 'block';
+}
+
+function interpretBMI(bmi) {
+  if (bmi < 18.5) {
+    return "underweight";
+  } else if (bmi < 25) {
+    return "healthy";
+  } else if (bmi < 30) {
+    return "overweight";
+  } else {
+    return "obese";
+  }
+}
+
+function showDietSection() {
+  window.location.href = '/diet';
+}
+
+function showExerciseSection() {
+  window.location.href = '/exercise';
+}
+
+function openChatbot() {
+  window.location.href = '/chatbot';
+}
+function updateDietChart() {
+  const bmi = parseFloat(localStorage.getItem('bmi'));
+  let weightCategory = '';
+
+  if (bmi < 18.5) {
+    weightCategory = 'Underweight';
+  } else if (bmi >= 18.5 && bmi < 24.9) {
+    weightCategory = 'Normal weight';
+  } else if (bmi >= 25 && bmi < 29.9) {
+    weightCategory = 'Overweight';
+  } else {
+    weightCategory = 'Obesity';
+  }
+
+  let foodImages = '';
+
+  const dietData = {
+    'Underweight': [
+      { name: 'Avocado', benefits: 'Healthy Fats, Fiber', image: 'https://th.bing.com/th/id/OIP.Q7XebBUhGyhOl8cMEVTrNAHaHa?w=220&h=220&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Sweet Potatoes', benefits: 'Carbs, Vitamin A', image: 'https://th.bing.com/th/id/OIP.lKgQbpc6nBkvQIQX2fEGrAHaFy?w=224&h=180&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Whole Grain Bread', benefits: 'Carbs, Fiber', image: 'https://example.com/whole_grain_bread.jpg' },
+      { name: 'Nuts', benefits: 'Healthy Fats, Protein', image: 'https://th.bing.com/th/id/OIP.2Yik2zVi0PURljI_gyJabwHaE8?w=235&h=180&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Cottage Cheese', benefits: 'Calcium, Protein', image: 'https://th.bing.com/th/id/OIP.AAJzQmsxk6f-cdxoHdlW8wHaE8?w=186&h=124&c=7&r=0&o=5&pid=1.7' }
+    ],
+    'Normal weight': [
+      { name: 'Broccoli', benefits: 'Vitamins, Fiber', image: 'https://th.bing.com/th/id/OIP.RxxsiXcL6SqvSSF_X8ghHAHaFy?w=186&h=180&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Paneer', benefits: 'Protein, Calcium', image: 'https://th.bing.com/th/id/OIP.Dc52erzQhVGjSz2t085TeQHaKC?w=130&h=180&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Carrots', benefits: 'Vitamin A, Fiber', image: 'https://th.bing.com/th/id/OIP.lhf0cNctUtpmNlIhJfVD5AHaFn?w=254&h=192&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Quinoa', benefits: 'Protein, Fiber', image: 'https://th.bing.com/th/id/OIP.ftrT36dMSt_NRtMS6dGHzQHaFy?w=237&h=185&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Beans', benefits: 'Protein, Fiber', image: 'https://th.bing.com/th/id/OIP.zWYi7fn89_GfQ-ghiO-RJwHaFy?w=186&h=145&c=7&r=0&o=5&pid=1.7' }
+    ],
+    'Overweight': [
+      { name: 'Spinach', benefits: 'Iron, Low Calories', image: 'https://th.bing.com/th/id/OIP.h16bLrESBVkTcj85MRX83AHaFy?w=241&h=188&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Brown Rice', benefits: 'Fiber, Magnesium', image: 'https://th.bing.com/th/id/OIP.o2gLqLy2uS6Q48rEdUiMhAAAAA?w=216&h=180&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Oats', benefits: 'Fiber, Low Calorie', image: 'https://th.bing.com/th/id/OIP.bWe98jrct4d7P0EJxEP4OQHaJx?w=186&h=246&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Bell Peppers', benefits: 'Vitamins, Fiber', image: 'https://th.bing.com/th/id/OIP.jb3SvuwupUa_c0H0rdYDcgHaFy?w=256&h=200&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Chickpeas', benefits: 'Protein, Low Fat', image: 'https://th.bing.com/th/id/OIP.4T6qzsrYkFI4otwhxW4hegHaEK?w=318&h=180&c=7&r=0&o=5&pid=1.7' }
+    ],
+    'Obesity': [
+      { name: 'Lentils', benefits: 'Protein, Fiber', image: 'https://th.bing.com/th/id/OIP.mYbtm5UywBA8lvRHGBg-cwAAAA?w=237&h=185&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Quinoa', benefits: 'Protein, Low Fat', image: 'https://th.bing.com/th/id/OIP.ftrT36dMSt_NRtMS6dGHzQHaFy?w=237&h=185&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Cauliflower', benefits: 'Low Carb, Vitamin C', image: 'https://th.bing.com/th/id/OIP.NU0tzmt00kpv6EoXlT-TwQHaFy?w=242&h=189&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Brussels Sprouts', benefits: 'Fiber, Vitamin K', image: 'https://th.bing.com/th/id/OIP.zd-1wqVg2dLqqx4BvKB_PAAAAA?w=234&h=180&c=7&r=0&o=5&pid=1.7' },
+      { name: 'Pumpkin Seeds', benefits: 'Magnesium, Zinc', image: 'https://th.bing.com/th/id/OIP.LpxPAyESos_fKbTdPSxk5AHaFy?w=226&h=197&c=7&r=0&o=5&pid=1.7' }
+    ]
+  };
+
+  dietData[weightCategory].forEach(item => {
+    foodImages += `
+      <div class="card">
+        <img src="${item.image}" alt="${item.name}">
+        <div class="card-title">${item.name}</div>
+        <div class="card-description">${item.benefits}</div>
+      </div>
+    `;
+  });
+
+  document.getElementById('diet-chart').innerHTML = `<h3>Vegetarian Diet Plan for ${weightCategory}:</h3>`;
+  document.querySelector('.food-images').innerHTML = foodImages;
+}
+
+function updateExerciseChart() {
+  const bmi = parseFloat(localStorage.getItem('bmi'));
+  let weightCategory = '';
+
+  if (bmi < 18.5) {
+    weightCategory = 'Underweight';
+  } else if (bmi >= 18.5 && bmi < 24.9) {
+    weightCategory = 'Normal weight';
+  } else if (bmi >= 25 && bmi < 29.9) {
+    weightCategory = 'Overweight';
+  } else {
+    weightCategory = 'Obesity';
+  }
+
+  let exerciseImages = '';
+
+  const exerciseData = {
+    'Underweight': [
+      { name: 'Yoga', benefits: 'Flexibility, Strength', image: 'https://th.bing.com/th/id/OIP.AjbnAw4mjskGLOSZBp3t9AHaHj?w=186&h=190&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Light Cardio', benefits: 'Endurance', image: 'https://th.bing.com/th/id/OIP.ri9XtZ33dpSC27uysoM5kQAAAA?w=186&h=263&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Bodyweight Exercises', benefits: 'Strength', image: 'https://th.bing.com/th/id/OIP.kkoVJcBlOxO_JTIPVXZIGAHaHa?w=186&h=186&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Pilates', benefits: 'Core Strength', image: 'https://th.bing.com/th/id/OIP.s_hSh6s6naxmClRX2pz5bQHaOI?w=180&h=345&c=7&r=0&o=5&dpr=1.1&pid=1.7g' },
+      { name: 'Walking', benefits: 'Low Intensity Cardio', image: 'https://th.bing.com/th/id/OIP.lF86-rNwEgUPJGOY_tExlwHaNp?w=184&h=339&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
+    ],
+    'Normal weight': [
+      { name: 'Walking', benefits: 'Cardio', image: 'https://th.bing.com/th/id/OIP.ig8yY-GldaJuRtAEP57DawHaLD?w=186&h=278&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Strength Training', benefits: 'Muscle Building', image: 'https://th.bing.com/th/id/OIP.jc0vN6lhkkRnwTF4Z82RGQHaSh?w=139&h=349&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'HIIT', benefits: 'High Intensity Cardio', image: 'https://th.bing.com/th/id/OIP.IevEx2BcRMmfNWtemdyD-AHaFv?w=186&h=144&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Cycling', benefits: 'Leg Strength', image: 'https://th.bing.com/th/id/OIP.E_5TaGtsArr6gUXe5U8GjAHaHa?w=186&h=186&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Swimming', benefits: 'Full Body Workout', image: 'https://th.bing.com/th/id/OIP.hs3xzvJ4eGn-aB2_ZeSpCQAAAA?w=186&h=260&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
+    ],
+    'Overweight': [
+      { name: 'Brisk Walking', benefits: 'Cardio', image: 'https://th.bing.com/th/id/OIP.9h2vU-q3MaqyW7bCf82utAHaJa?w=153&h=194&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Swimming', benefits: 'Full Body', image: 'https://th.bing.com/th/id/OIP.hs3xzvJ4eGn-aB2_ZeSpCQAAAA?w=186&h=260&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Low-Impact Aerobics', benefits: 'Cardio', image: 'https://th.bing.com/th/id/OIP.u2Z-V8oRWQd2IREyc1DqSwAAAA?w=126&h=180&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Rowing', benefits: 'Upper Body Strength', image: 'https://th.bing.com/th/id/OIP.e-f9xTv8cMcjMpXRfAQ_VAAAAA?w=209&h=195&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Elliptical Machine', benefits: 'Cardio, Low Impact', image: 'https://th.bing.com/th/id/OIP.FY42ZTmdGXEpxCDZQP8pewHaF3?w=250&h=198&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
+    ],
+    'Obesity': [
+      { name: 'Low-Impact Aerobics', benefits: 'Cardio', image: 'https://th.bing.com/th/id/OIP.u2Z-V8oRWQd2IREyc1DqSwAAAA?w=126&h=180&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Cycling', benefits: 'Leg Strength', image: 'https://th.bing.com/th/id/OIP.E_5TaGtsArr6gUXe5U8GjAHaHa?w=186&h=186&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Water Aerobics', benefits: 'Low Impact', image: 'https://th.bing.com/th/id/OIP.UgkTYoJStoP8EgT93g4YewHaJc?w=186&h=237&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Resistance Band Exercises', benefits: 'Strength Training', image: 'https://th.bing.com/th/id/OIP.Dzw39DB5DIUJ2XumpBGTDAAAAA?w=165&h=349&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Stretching', benefits: 'Flexibility', image: 'https://th.bing.com/th/id/OIP.6y7SmHTmVVSMP_63njt29QHaKe?w=186&h=263&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
+    ]
+  };
+
+  exerciseData[weightCategory].forEach(item => {
+    exerciseImages += `
+      <div class="card">
+        <img src="${item.image}" alt="${item.name}">
+        <div class="card-title">${item.name}</div>
+        <div class="card-description">${item.benefits}</div>
+      </div>
+    `;
+  });
+
+  document.getElementById('exercise-chart').innerHTML = `<h3>Recommended Exercises for ${weightCategory}:</h3>`;
+  document.querySelector('.exercise-images').innerHTML = exerciseImages;
+}
