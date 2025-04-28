@@ -33,9 +33,11 @@ function handleSubmit(e) {
   descText.innerHTML = `You are <strong>${desc}</strong>`;
 
   localStorage.setItem('bmi', bmi.toFixed(2));
+  localStorage.setItem('weight', weight);
+  localStorage.setItem('height', height);
 
   document.getElementById('bot-interface').style.display = 'block';
-  document.getElementById('bot-text').innerHTML = "Great! Now that we've calculated your BMI, would you like to see some diet options or exercise plans?";
+  document.getElementById('bot-text').innerHTML = "Would you like to see diet options or exercise plans?";
   document.getElementById('bot-options').style.display = 'block';
 
   // Show the chatbot tag
@@ -54,7 +56,8 @@ function interpretBMI(bmi) {
   }
 }
 
-function showDietSection() {
+function showDietSection(dietType) {
+  localStorage.setItem('dietType', dietType);
   window.location.href = '/diet';
 }
 
@@ -65,8 +68,10 @@ function showExerciseSection() {
 function openChatbot() {
   window.location.href = '/chatbot';
 }
+
 function updateDietChart() {
   const bmi = parseFloat(localStorage.getItem('bmi'));
+  const dietType = localStorage.getItem('dietType') || 'veg';
   let weightCategory = '';
 
   if (bmi < 18.5) {
@@ -82,37 +87,77 @@ function updateDietChart() {
   let foodImages = '';
 
   const dietData = {
-    'Underweight': [
-      { name: 'Avocado', benefits: 'Healthy Fats, Fiber', image: 'https://th.bing.com/th/id/OIP.Q7XebBUhGyhOl8cMEVTrNAHaHa?w=220&h=220&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Sweet Potatoes', benefits: 'Carbs, Vitamin A', image: 'https://th.bing.com/th/id/OIP.lKgQbpc6nBkvQIQX2fEGrAHaFy?w=224&h=180&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Whole Grain Bread', benefits: 'Carbs, Fiber', image: 'https://example.com/whole_grain_bread.jpg' },
-      { name: 'Nuts', benefits: 'Healthy Fats, Protein', image: 'https://th.bing.com/th/id/OIP.2Yik2zVi0PURljI_gyJabwHaE8?w=235&h=180&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Cottage Cheese', benefits: 'Calcium, Protein', image: 'https://th.bing.com/th/id/OIP.AAJzQmsxk6f-cdxoHdlW8wHaE8?w=186&h=124&c=7&r=0&o=5&pid=1.7' }
-    ],
-    'Normal weight': [
-      { name: 'Broccoli', benefits: 'Vitamins, Fiber', image: 'https://th.bing.com/th/id/OIP.RxxsiXcL6SqvSSF_X8ghHAHaFy?w=186&h=180&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Paneer', benefits: 'Protein, Calcium', image: 'https://th.bing.com/th/id/OIP.Dc52erzQhVGjSz2t085TeQHaKC?w=130&h=180&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Carrots', benefits: 'Vitamin A, Fiber', image: 'https://th.bing.com/th/id/OIP.lhf0cNctUtpmNlIhJfVD5AHaFn?w=254&h=192&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Quinoa', benefits: 'Protein, Fiber', image: 'https://th.bing.com/th/id/OIP.ftrT36dMSt_NRtMS6dGHzQHaFy?w=237&h=185&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Beans', benefits: 'Protein, Fiber', image: 'https://th.bing.com/th/id/OIP.zWYi7fn89_GfQ-ghiO-RJwHaFy?w=186&h=145&c=7&r=0&o=5&pid=1.7' }
-    ],
-    'Overweight': [
-      { name: 'Spinach', benefits: 'Iron, Low Calories', image: 'https://th.bing.com/th/id/OIP.h16bLrESBVkTcj85MRX83AHaFy?w=241&h=188&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Brown Rice', benefits: 'Fiber, Magnesium', image: 'https://th.bing.com/th/id/OIP.o2gLqLy2uS6Q48rEdUiMhAAAAA?w=216&h=180&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Oats', benefits: 'Fiber, Low Calorie', image: 'https://th.bing.com/th/id/OIP.bWe98jrct4d7P0EJxEP4OQHaJx?w=186&h=246&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Bell Peppers', benefits: 'Vitamins, Fiber', image: 'https://th.bing.com/th/id/OIP.jb3SvuwupUa_c0H0rdYDcgHaFy?w=256&h=200&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Chickpeas', benefits: 'Protein, Low Fat', image: 'https://th.bing.com/th/id/OIP.4T6qzsrYkFI4otwhxW4hegHaEK?w=318&h=180&c=7&r=0&o=5&pid=1.7' }
-    ],
-    'Obesity': [
-      { name: 'Lentils', benefits: 'Protein, Fiber', image: 'https://th.bing.com/th/id/OIP.mYbtm5UywBA8lvRHGBg-cwAAAA?w=237&h=185&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Quinoa', benefits: 'Protein, Low Fat', image: 'https://th.bing.com/th/id/OIP.ftrT36dMSt_NRtMS6dGHzQHaFy?w=237&h=185&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Cauliflower', benefits: 'Low Carb, Vitamin C', image: 'https://th.bing.com/th/id/OIP.NU0tzmt00kpv6EoXlT-TwQHaFy?w=242&h=189&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Brussels Sprouts', benefits: 'Fiber, Vitamin K', image: 'https://th.bing.com/th/id/OIP.zd-1wqVg2dLqqx4BvKB_PAAAAA?w=234&h=180&c=7&r=0&o=5&pid=1.7' },
-      { name: 'Pumpkin Seeds', benefits: 'Magnesium, Zinc', image: 'https://th.bing.com/th/id/OIP.LpxPAyESos_fKbTdPSxk5AHaFy?w=226&h=197&c=7&r=0&o=5&pid=1.7' }
-    ]
+    'veg': {
+      'Underweight': [
+        { name: 'Avocado', benefits: 'Healthy Fats, Fiber', image: 'https://th.bing.com/th/id/OIP.Q7XebBUhGyhOl8cMEVTrNAHaHa?w=220&h=220&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Sweet Potatoes', benefits: 'Carbs, Vitamin A', image: 'https://th.bing.com/th/id/OIP.lKgQbpc6nBkvQIQX2fEGrAHaFy?w=224&h=180&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Whole Grain Bread', benefits: 'Carbs, Fiber', image: 'https://example.com/whole_grain_bread.jpg' },
+        { name: 'Nuts', benefits: 'Healthy Fats, Protein', image: 'https://th.bing.com/th/id/OIP.2Yik2zVi0PURljI_gyJabwHaE8?w=235&h=180&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Cottage Cheese', benefits: 'Calcium, Protein', image: 'https://th.bing.com/th/id/OIP.AAJzQmsxk6f-cdxoHdlW8wHaE8?w=186&h=124&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Bananas', benefits: 'Potassium, Energy', image: 'https://example.com/bananas.jpg' }
+      ],
+      'Normal weight': [
+        { name: 'Broccoli', benefits: 'Vitamins, Fiber', image: 'https://th.bing.com/th/id/OIP.RxxsiXcL6SqvSSF_X8ghHAHaFy?w=186&h=180&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Paneer', benefits: 'Protein, Calcium', image: 'https://th.bing.com/th/id/OIP.Dc52erzQhVGjSz2t085TeQHaKC?w=130&h=180&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Carrots', benefits: 'Vitamin A, Fiber', image: 'https://th.bing.com/th/id/OIP.lhf0cNctUtpmNlIhJfVD5AHaFn?w=254&h=192&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Quinoa', benefits: 'Protein, Fiber', image: 'https://th.bing.com/th/id/OIP.ftrT36dMSt_NRtMS6dGHzQHaFy?w=237&h=185&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Beans', benefits: 'Protein, Fiber', image: 'https://th.bing.com/th/id/OIP.zWYi7fn89_GfQ-ghiO-RJwHaFy?w=186&h=145&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Lentils', benefits: 'Protein, Iron', image: 'https://example.com/lentils.jpg' }
+      ],
+      'Overweight': [
+        { name: 'Spinach', benefits: 'Iron, Low Calories', image: 'https://th.bing.com/th/id/OIP.h16bLrESBVkTcj85MRX83AHaFy?w=241&h=188&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Brown Rice', benefits: 'Fiber, Magnesium', image: 'https://th.bing.com/th/id/OIP.o2gLqLy2uS6Q48rEdUiMhAAAAA?w=216&h=180&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Oats', benefits: 'Fiber, Low Calorie', image: 'https://th.bing.com/th/id/OIP.bWe98jrct4d7P0EJxEP4OQHaJx?w=186&h=246&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Bell Peppers', benefits: 'Vitamins, Fiber', image: 'https://th.bing.com/th/id/OIP.jb3SvuwupUa_c0H0rdYDcgHaFy?w=256&h=200&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Chickpeas', benefits: 'Protein, Low Fat', image: 'https://th.bing.com/th/id/OIP.4T6qzsrYkFI4otwhxW4hegHaEK?w=318&h=180&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Cucumbers', benefits: 'Hydration, Low Calories', image: 'https://example.com/cucumbers.jpg' }
+      ],
+      'Obesity': [
+        { name: 'Lentils', benefits: 'Protein, Fiber', image: 'https://th.bing.com/th/id/OIP.mYbtm5UywBA8lvRHGBg-cwAAAA?w=237&h=185&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Quinoa', benefits: 'Protein, Low Fat', image: 'https://th.bing.com/th/id/OIP.ftrT36dMSt_NRtMS6dGHzQHaFy?w=237&h=185&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Cauliflower', benefits: 'Low Carb, Vitamin C', image: 'https://th.bing.com/th/id/OIP.NU0tzmt00kpv6EoXlT-TwQHaFy?w=242&h=189&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Brussels Sprouts', benefits: 'Fiber, Vitamin K', image: 'https://th.bing.com/th/id/OIP.zd-1wqVg2dLqqx4BvKB_PAAAAA?w=234&h=180&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Pumpkin Seeds', benefits: 'Magnesium, Zinc', image: 'https://th.bing.com/th/id/OIP.LpxPAyESos_fKbTdPSxk5AHaFy?w=226&h=197&c=7&r=0&o=5&pid=1.7' },
+        { name: 'Broccoli', benefits: 'Vitamins, Fiber', image: 'https://th.bing.com/th/id/OIP.RxxsiXcL6SqvSSF_X8ghHAHaFy?w=186&h=180&c=7&r=0&o=5&pid=1.7' }
+      ]
+    },
+    'non-veg': {
+      'Underweight': [
+        { name: 'Chicken Breast', benefits: 'Protein, Low Fat', image: 'https://example.com/chicken_breast.jpg' },
+        { name: 'Salmon', benefits: 'Omega-3, Protein', image: 'https://example.com/salmon.jpg' },
+        { name: 'Eggs', benefits: 'Protein, Vitamins', image: 'https://example.com/eggs.jpg' },
+        { name: 'Turkey', benefits: 'Protein, Low Fat', image: 'https://example.com/turkey.jpg' },
+        { name: 'Beef', benefits: 'Protein, Iron', image: 'https://example.com/beef.jpg' },
+        { name: 'Shrimp', benefits: 'Protein, Low Calories', image: 'https://example.com/shrimp.jpg' }
+      ],
+      'Normal weight': [
+        { name: 'Grilled Chicken', benefits: 'Protein, Low Fat', image: 'https://example.com/grilled_chicken.jpg' },
+        { name: 'Tuna', benefits: 'Protein, Omega-3', image: 'https://example.com/tuna.jpg' },
+        { name: 'Lean Pork', benefits: 'Protein, Vitamins', image: 'https://example.com/lean_pork.jpg' },
+        { name: 'Sardines', benefits: 'Protein, Calcium', image: 'https://example.com/sardines.jpg' },
+        { name: 'Venison', benefits: 'Protein, Low Fat', image: 'https://example.com/venison.jpg' },
+        { name: 'Oysters', benefits: 'Protein, Zinc', image: 'https://example.com/oysters.jpg' }
+      ],
+      'Overweight': [
+        { name: 'Chicken Soup', benefits: 'Protein, Low Calories', image: 'https://example.com/chicken_soup.jpg' },
+        { name: 'Baked Cod', benefits: 'Protein, Low Fat', image: 'https://example.com/baked_cod.jpg' },
+        { name: 'Turkey Breast', benefits: 'Protein, Low Fat', image: 'https://example.com/turkey_breast.jpg' },
+        { name: 'Shrimp Salad', benefits: 'Protein, Low Calories', image: 'https://example.com/shrimp_salad.jpg' },
+        { name: 'Grilled Salmon', benefits: 'Protein, Omega-3', image: 'https://example.com/grilled_salmon.jpg' },
+        { name: 'Lean Beef', benefits: 'Protein, Iron', image: 'https://example.com/lean_beef.jpg' }
+      ],
+      'Obesity': [
+        { name: 'Boiled Eggs', benefits: 'Protein, Vitamins', image: 'https://example.com/boiled_eggs.jpg' },
+        { name: 'Grilled Chicken Breast', benefits: 'Protein, Low Fat', image: 'https://example.com/grilled_chicken_breast.jpg' },
+        { name: 'Baked Turkey', benefits: 'Protein, Low Fat', image: 'https://example.com/baked_turkey.jpg' },
+        { name: 'Canned Tuna', benefits: 'Protein, Omega-3', image: 'https://example.com/canned_tuna.jpg' },
+        { name: 'Lean Pork Chops', benefits: 'Protein, Vitamins', image: 'https://example.com/lean_pork_chops.jpg' },
+        { name: 'Grilled Shrimp', benefits: 'Protein, Low Calories', image: 'https://example.com/grilled_shrimp.jpg' }
+      ]
+    }
   };
 
-  dietData[weightCategory].forEach(item => {
+  dietData[dietType][weightCategory].forEach(item => {
     foodImages += `
       <div class="card">
         <img src="${item.image}" alt="${item.name}">
@@ -122,7 +167,7 @@ function updateDietChart() {
     `;
   });
 
-  document.getElementById('diet-chart').innerHTML = `<h3>Vegetarian Diet Plan for ${weightCategory}:</h3>`;
+  document.getElementById('diet-chart').innerHTML = `<h3>${dietType.charAt(0).toUpperCase() + dietType.slice(1)} Diet Plan for ${weightCategory}:</h3>`;
   document.querySelector('.food-images').innerHTML = foodImages;
 }
 
@@ -148,28 +193,32 @@ function updateExerciseChart() {
       { name: 'Light Cardio', benefits: 'Endurance', image: 'https://th.bing.com/th/id/OIP.ri9XtZ33dpSC27uysoM5kQAAAA?w=186&h=263&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Bodyweight Exercises', benefits: 'Strength', image: 'https://th.bing.com/th/id/OIP.kkoVJcBlOxO_JTIPVXZIGAHaHa?w=186&h=186&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Pilates', benefits: 'Core Strength', image: 'https://th.bing.com/th/id/OIP.s_hSh6s6naxmClRX2pz5bQHaOI?w=180&h=345&c=7&r=0&o=5&dpr=1.1&pid=1.7g' },
-      { name: 'Walking', benefits: 'Low Intensity Cardio', image: 'https://th.bing.com/th/id/OIP.lF86-rNwEgUPJGOY_tExlwHaNp?w=184&h=339&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
+      { name: 'Walking', benefits: 'Low Intensity Cardio', image: 'https://th.bing.com/th/id/OIP.lF86-rNwEgUPJGOY_tExlwHaNp?w=184&h=339&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Swimming', benefits: 'Full Body Workout', image: 'https://th.bing.com/th/id/OIP.hs3xzvJ4eGn-aB2_ZeSpCQAAAA?w=186&h=260&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
     ],
     'Normal weight': [
       { name: 'Walking', benefits: 'Cardio', image: 'https://th.bing.com/th/id/OIP.ig8yY-GldaJuRtAEP57DawHaLD?w=186&h=278&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Strength Training', benefits: 'Muscle Building', image: 'https://th.bing.com/th/id/OIP.jc0vN6lhkkRnwTF4Z82RGQHaSh?w=139&h=349&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'HIIT', benefits: 'High Intensity Cardio', image: 'https://th.bing.com/th/id/OIP.IevEx2BcRMmfNWtemdyD-AHaFv?w=186&h=144&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Cycling', benefits: 'Leg Strength', image: 'https://th.bing.com/th/id/OIP.E_5TaGtsArr6gUXe5U8GjAHaHa?w=186&h=186&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
-      { name: 'Swimming', benefits: 'Full Body Workout', image: 'https://th.bing.com/th/id/OIP.hs3xzvJ4eGn-aB2_ZeSpCQAAAA?w=186&h=260&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
+      { name: 'Swimming', benefits: 'Full Body Workout', image: 'https://th.bing.com/th/id/OIP.hs3xzvJ4eGn-aB2_ZeSpCQAAAA?w=186&h=260&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Jump Rope', benefits: 'Cardio, Coordination', image: 'https://example.com/jump_rope.jpg' }
     ],
     'Overweight': [
       { name: 'Brisk Walking', benefits: 'Cardio', image: 'https://th.bing.com/th/id/OIP.9h2vU-q3MaqyW7bCf82utAHaJa?w=153&h=194&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Swimming', benefits: 'Full Body', image: 'https://th.bing.com/th/id/OIP.hs3xzvJ4eGn-aB2_ZeSpCQAAAA?w=186&h=260&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Low-Impact Aerobics', benefits: 'Cardio', image: 'https://th.bing.com/th/id/OIP.u2Z-V8oRWQd2IREyc1DqSwAAAA?w=126&h=180&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Rowing', benefits: 'Upper Body Strength', image: 'https://th.bing.com/th/id/OIP.e-f9xTv8cMcjMpXRfAQ_VAAAAA?w=209&h=195&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
-      { name: 'Elliptical Machine', benefits: 'Cardio, Low Impact', image: 'https://th.bing.com/th/id/OIP.FY42ZTmdGXEpxCDZQP8pewHaF3?w=250&h=198&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
+      { name: 'Elliptical Machine', benefits: 'Cardio, Low Impact', image: 'https://th.bing.com/th/id/OIP.FY42ZTmdGXEpxCDZQP8pewHaF3?w=250&h=198&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Cycling', benefits: 'Leg Strength', image: 'https://th.bing.com/th/id/OIP.E_5TaGtsArr6gUXe5U8GjAHaHa?w=186&h=186&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
     ],
     'Obesity': [
       { name: 'Low-Impact Aerobics', benefits: 'Cardio', image: 'https://th.bing.com/th/id/OIP.u2Z-V8oRWQd2IREyc1DqSwAAAA?w=126&h=180&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Cycling', benefits: 'Leg Strength', image: 'https://th.bing.com/th/id/OIP.E_5TaGtsArr6gUXe5U8GjAHaHa?w=186&h=186&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Water Aerobics', benefits: 'Low Impact', image: 'https://th.bing.com/th/id/OIP.UgkTYoJStoP8EgT93g4YewHaJc?w=186&h=237&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
       { name: 'Resistance Band Exercises', benefits: 'Strength Training', image: 'https://th.bing.com/th/id/OIP.Dzw39DB5DIUJ2XumpBGTDAAAAA?w=165&h=349&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
-      { name: 'Stretching', benefits: 'Flexibility', image: 'https://th.bing.com/th/id/OIP.6y7SmHTmVVSMP_63njt29QHaKe?w=186&h=263&c=7&r=0&o=5&dpr=1.1&pid=1.7' }
+      { name: 'Stretching', benefits: 'Flexibility', image: 'https://th.bing.com/th/id/OIP.6y7SmHTmVVSMP_63njt29QHaKe?w=186&h=263&c=7&r=0&o=5&dpr=1.1&pid=1.7' },
+      { name: 'Tai Chi', benefits: 'Balance, Coordination', image: 'https://example.com/tai_chi.jpg' }
     ]
   };
 
@@ -186,3 +235,16 @@ function updateExerciseChart() {
   document.getElementById('exercise-chart').innerHTML = `<h3>Recommended Exercises for ${weightCategory}:</h3>`;
   document.querySelector('.exercise-images').innerHTML = exerciseImages;
 }
+
+window.onload = function() {
+  const storedWeight = localStorage.getItem('weight');
+  const storedHeight = localStorage.getItem('height');
+
+  if (!storedWeight || !storedHeight) {
+    form.weight.value = 0;
+    form.height.value = 0;
+  } else {
+    form.weight.value = storedWeight;
+    form.height.value = storedHeight;
+  }
+};
