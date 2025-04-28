@@ -68,7 +68,7 @@ h1 {
 }
 
 .calculator button {
-  width: 50%;
+  width: 100%;
   border-radius: 5px;
   border: none;
   cursor: pointer;
@@ -256,22 +256,29 @@ h1 {
   }
 }
 
-.container.diet-exercise button {
-  width: 100%;
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.button-container button {
+  flex: 1;
+  min-width: calc(25% - 10px);
+  padding: 10px;
   border-radius: 5px;
   border: none;
   cursor: pointer;
-  padding: 10px;
   background: #00a1a3;
   color: #fff;
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: 0.3s;
   font-size: 0.875rem;
-  margin-top: 1rem;
 }
 
-.container.diet-exercise button:hover {
+.button-container button:hover {
   filter: brightness(120%);
 }
 
