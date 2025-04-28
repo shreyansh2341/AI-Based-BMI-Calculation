@@ -14,8 +14,22 @@
           <div id="diet-chart"></div>
           <div class="food-images"></div>
         </section>
-        <button onclick="location.href='/'">Back to BMI</button>
-        <button onclick="location.href='/exercise'">Go to Exercises</button>
+        <div class="button-container">
+          <button onclick="location.href='/'">Back to BMI</button>
+          <button id="non-veg-button" onclick="showDietSection('non-veg')" style="display: none;">Non-Veg Diet Plan</button>
+          <button id="veg-button" onclick="showDietSection('veg')" style="display: none;">Veg Diet Plan</button>
+          <button onclick="location.href='/exercise'">Go to Exercises</button>
+        </div>
       </div>
+      <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          const dietType = localStorage.getItem('dietType');
+          if (dietType === 'veg') {
+            document.getElementById('non-veg-button').style.display = 'block';
+          } else if (dietType === 'non-veg') {
+            document.getElementById('veg-button').style.display = 'block';
+          }
+        });
+      </script>
 </body>
 </html>
