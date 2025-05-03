@@ -6,64 +6,387 @@
     <title>BMI Calculator</title>
     <link rel="stylesheet" href="/css/bmi_style.css">
     <script src="/js/bmi_script.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="/js/firebase-init.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <h1>BMI Calculator</h1>
 
-        <form class="calculator">
-            <div>
-                <label for="weight">Weight (kg)</label>
-                <input
-                    type="number"
-                    id="weight"
-                    name="weight"
-                    min="0"
-                    step="any"
-                    value="0"
-                    inputmode="decimal"
-                    onfocus="if (this.value === '0') this.value = ''"
-                />
-            </div>
+    
 
-            <div>
-                <label for="height">Height (cm)</label>
-                <input
-                    type="number"
-                    id="height"
-                    name="height"
-                    min="0"
-                    step="any"
-                    value="0"
-                    inputmode="decimal"
-                    onfocus="if (this.value === '0') this.value = ''"
-                />
-            </div>
+    <div class="container" style="margin-left: 270px;">
+        <div class="main-content">
+            <h1>BMI Calculator</h1>
+            <form class="calculator" id="bmi-form">
+                <div>
+                    <label for="weight">Weight (kg)</label>
+                    <input
+                        type="number"
+                        id="weight"
+                        name="weight"
+                        min="0"
+                        step="any"
+                        value="0"
+                        inputmode="decimal"
+                        onfocus="if (this.value === '0') this.value = ''"
+                    />
+                </div>
 
-            <div>
-                <button type="reset">Reset</button>
-                <button type="submit">Submit</button>
-            </div>
-        </form>
+                <div>
+                    <label for="height">Height (cm)</label>
+                    <input
+                        type="number"
+                        id="height"
+                        name="height"
+                        min="0"
+                        step="any"
+                        value="0"
+                        inputmode="decimal"
+                        onfocus="if (this.value === '0') this.value = ''"
+                    />
+                </div>
 
-        <section class="output">
-            <h3>Your BMI is</h3>
-            <p id="bmi">0</p>
-            <p id="desc">N/A</p>
-        </section>
+                <div>
+                    <button type="reset">Reset</button>
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
 
-        <section id="bot-interface" style="display: none;">
-            <p id="bot-text"></p>
-            <div id="bot-options">
-                <button type="button" onclick="showDietSection('veg')">Veg Diet Plan</button>
-                <button type="button" onclick="showDietSection('non-veg')">Non-Veg Diet Plan</button>
-                <button type="button" onclick="showExerciseSection()">Go to Exercise Plan</button>
-            </div>
-        </section>
+            <section class="output">
+                <h3>Your BMI is</h3>
+                <p id="bmi">0</p>
+                <p id="desc">N/A</p>
+            </section>
 
-        <section id="chatbot-tag" style="display: none;">
-            <p>Want personalized advice? <button onclick="openChatbot()">Chat with our AI!</button></p>
-        </section>
+            <section id="bot-interface" style="display: none;">
+                <p id="bot-text"></p>
+                <div id="bot-options">
+                    <button type="button" onclick="showDietSection('veg')">Veg Diet Plan</button>
+                    <button type="button" onclick="showDietSection('non-veg')">Non-Veg Diet Plan</button>
+                    <button type="button" onclick="showExerciseSection()">Go to Exercise Plan</button>
+                </div>
+            </section>
+
+            <section id="chatbot-tag" style="display: none;">
+                <p>Want personalized advice? <button onclick="openChatbot()">Chat with our AI!</button></p>
+            </section>
+        </div>
     </div>
+    <div class="history-section">
+        <button class="logout-button" onclick="logout()">Logout</button>
+    </div>
+    <script>
+        // firebase.auth().onAuthStateChanged((user) => {
+        //     if (user) {
+        //         // Fetch user history and display it
+        //         fetchUserHistory(user.uid);
+        //     } else {
+        //         window.location.href = '/login';
+        //     }
+        // });
+
+        document.getElementById('bmi-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+
+            if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
+                alert("Please enter a valid weight and height");
+                return;
+            }
+
+            const heightInMeters = height / 100;
+            const bmi = weight / Math.pow(heightInMeters, 2);
+            const desc = interpretBMI(bmi);
+
+            document.getElementById('bmi').textContent = bmi.toFixed(2);
+            document.getElementById('desc').textContent = `You are ${desc}`;
+
+            // Store BMI calculation in user history
+            storeUserHistory(bmi, weight, height);
+
+            document.getElementById('bot-interface').style.display = 'block';
+            document.getElementById('bot-text').innerHTML = "Would you like to see diet options or exercise plans?";
+            document.getElementById('bot-options').style.display = 'block';
+
+            // Show the chatbot tag
+            document.getElementById('chatbot-tag').style.display = 'block';
+        });
+
+        function interpretBMI(bmi) {
+            if (bmi < 18.5) {
+                return "underweight";
+            } else if (bmi < 25) {
+                return "healthy";
+            } else if (bmi < 30) {
+                return "overweight";
+            } else {
+                return "obese";
+            }
+        }
+
+        function storeUserHistory(bmi, weight, height) {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                const db = firebase.firestore();
+                const historyRef = db.collection('userHistory').doc(user.uid);
+                historyRef.get().then((doc) => {
+                    const history = doc.exists ? doc.data().history || [] : [];
+                    const newEntry = {
+                        bmi: bmi,
+                        weight: weight,
+                        height: height,
+                        date: new Date().toLocaleString(),
+                        sections: ['BMI Calculator']
+                    };
+                    history.push(newEntry);
+                    historyRef.set({ history });
+                    fetchUserHistory(user.uid); // Update the history display
+                });
+            }
+        }
+
+        function fetchUserHistory(uid) {
+            const userHistoryDiv = document.getElementById('user-history');
+            userHistoryDiv.innerHTML = '<p>Loading history...</p>';
+
+            const db = firebase.firestore();
+            db.collection('userHistory').doc(uid).get().then((doc) => {
+                if (doc.exists) {
+                    const history = doc.data().history;
+                    userHistoryDiv.innerHTML = '';
+                    history.forEach(item => {
+                        const p = document.createElement('p');
+                        p.textContent = `BMI: ${item.bmi}, Weight: ${item.weight} kg, Height: ${item.height} cm, Date: ${item.date}, Sections Visited: ${item.sections.join(', ')}`;
+                        userHistoryDiv.appendChild(p);
+                    });
+                } else {
+                    userHistoryDiv.innerHTML = '<p>No history available.</p>';
+                }
+            }).catch((error) => {
+                console.error('Error getting document:', error);
+                userHistoryDiv.innerHTML = '<p>Error loading history.</p>';
+            });
+        }
+
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = '/login';
+            }).catch((error) => {
+                alert(error.message);
+            });
+        }
+    </script>
 </body>
 </html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculator</title>
+    <link rel="stylesheet" href="/css/bmi_style.css">
+    <script src="/js/bmi_script.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="/js/firebase-init.js" defer></script>
+</head>
+<body>
+
+    <div class="history-section">
+        <h2>Your History</h2>
+        <div id="user-history"></div>
+        <button class="logout-button" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            <h1>BMI Calculator</h1>
+            <form class="calculator" id="bmi-form">
+                <div>
+                    <label for="weight">Weight (kg)</label>
+                    <input
+                        type="number"
+                        id="weight"
+                        name="weight"
+                        min="0"
+                        step="any"
+                        value="0"
+                        inputmode="decimal"
+                        onfocus="if (this.value === '0') this.value = ''"
+                    />
+                </div>
+
+                <div>
+                    <label for="height">Height (cm)</label>
+                    <input
+                        type="number"
+                        id="height"
+                        name="height"
+                        min="0"
+                        step="any"
+                        value="0"
+                        inputmode="decimal"
+                        onfocus="if (this.value === '0') this.value = ''"
+                    />
+                </div>
+
+                <div>
+                    <button type="reset">Reset</button>
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
+
+            <section class="output">
+                <h3>Your BMI is</h3>
+                <p id="bmi">0</p>
+                <p id="desc">N/A</p>
+            </section>
+
+            <section id="bot-interface" style="display: none;">
+                <p id="bot-text"></p>
+                <div id="bot-options">
+                    <button type="button" onclick="recordAndNavigate('Veg Diet Plan')">Veg Diet Plan</button>
+                    <button type="button" onclick="recordAndNavigate('Non-Veg Diet Plan')">Non-Veg Diet Plan</button>
+                    <button type="button" onclick="recordAndNavigate('Exercise Plan')">Go to Exercise Plan</button>
+                </div>
+            </section>
+
+            <section id="chatbot-tag" style="display: none;">
+                <p>Want personalized advice? <button onclick="openChatbot()">Chat with our AI!</button></p>
+            </section>
+        </div>
+    </div>
+    <script>
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // Fetch user history and display it
+                fetchUserHistory(user.uid);
+            } else {
+                window.location.href = '/login';
+            }
+        });
+
+        document.getElementById('bmi-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+
+            if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
+                alert("Please enter a valid weight and height");
+                return;
+            }
+
+            const heightInMeters = height / 100;
+            const bmi = weight / Math.pow(heightInMeters, 2);
+            const desc = interpretBMI(bmi);
+
+            document.getElementById('bmi').textContent = bmi.toFixed(2);
+            document.getElementById('desc').textContent = `You are ${desc}`;
+
+            // Store BMI calculation in user history
+            storeUserHistory(bmi, weight, height);
+
+            document.getElementById('bot-interface').style.display = 'block';
+            document.getElementById('bot-text').innerHTML = "Would you like to see diet options or exercise plans?";
+            document.getElementById('bot-options').style.display = 'block';
+
+            // Show the chatbot tag
+            document.getElementById('chatbot-tag').style.display = 'block';
+        });
+
+        function interpretBMI(bmi) {
+            if (bmi < 18.5) {
+                return "underweight";
+            } else if (bmi < 25) {
+                return "healthy";
+            } else if (bmi < 30) {
+                return "overweight";
+            } else {
+                return "obese";
+            }
+        }
+
+        function storeUserHistory(bmi, weight, height) {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                const db = firebase.firestore();
+                const historyRef = db.collection('userHistory').doc(user.uid);
+                historyRef.get().then((doc) => {
+                    const history = doc.exists ? doc.data().history || [] : [];
+                    const newEntry = {
+                        bmi: bmi,
+                        weight: weight,
+                        height: height,
+                        date: new Date().toLocaleString(),
+                        sections: ['BMI Calculator']
+                    };
+                    history.push(newEntry);
+                    historyRef.set({ history });
+                    fetchUserHistory(user.uid); // Update the history display
+                });
+            }
+        }
+
+        function fetchUserHistory(uid) {
+            const userHistoryDiv = document.getElementById('user-history');
+            userHistoryDiv.innerHTML = '<p>Loading history...</p>';
+
+            const db = firebase.firestore();
+            db.collection('userHistory').doc(uid).get().then((doc) => {
+                if (doc.exists) {
+                    const history = doc.data().history;
+                    userHistoryDiv.innerHTML = '';
+                    history.forEach(item => {
+                        const p = document.createElement('p');
+                        p.textContent = `BMI: ${item.bmi}, Weight: ${item.weight} kg, Height: ${item.height} cm, Date: ${item.date}, Sections Visited: ${item.sections.join(', ')}`;
+                        userHistoryDiv.appendChild(p);
+                    });
+                } else {
+                    userHistoryDiv.innerHTML = '<p>No history available.</p>';
+                }
+            }).catch((error) => {
+                console.error('Error getting document:', error);
+                userHistoryDiv.innerHTML = '<p>Error loading history.</p>';
+            });
+        }
+
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = '/login';
+            }).catch((error) => {
+                alert(error.message);
+            });
+        }
+
+        function recordAndNavigate(section) {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                const db = firebase.firestore();
+                const historyRef = db.collection('userHistory').doc(user.uid);
+                historyRef.get().then((doc) => {
+                    const history = doc.exists ? doc.data().history || [] : [];
+                    const newEntry = {
+                        section: section,
+                        date: new Date().toLocaleString()
+                    };
+                    history.push(newEntry);
+                    historyRef.set({ history });
+                    fetchUserHistory(user.uid); // Update the history display
+
+                    // Navigate to the respective section
+                    if (section === 'Veg Diet Plan') {
+                        showDietSection('veg');
+                    } else if (section === 'Non-Veg Diet Plan') {
+                        showDietSection('non-veg');
+                    } else if (section === 'Exercise Plan') {
+                        showExerciseSection();
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html> -->
