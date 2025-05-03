@@ -19,10 +19,10 @@ process.env.GOOGLE_APPLICATION_CREDENTIALS = path.join(
 );
 
 
-const serviceAccount = require('C:/Users/Shreyansh Rai/OneDrive/Desktop/BMI CALCULATOR WITH INTEGRATED AI HEALTH ADVISORY BOT/bmi-bot-f13d5-firebase-adminsdk-fbsvc-3ea72d122e.json');
+const serviceAccount = require('enter path to your service account key file here');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://bmi-bot-f13d5-default-rtdb.firebaseio.com/" 
+  databaseURL: "enter your database URL here" 
 });
 
 app.use(express.static(path.join(__dirname, '../public')));
