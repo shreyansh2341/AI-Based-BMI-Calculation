@@ -15,11 +15,11 @@ const io = new Server(server);
 
 process.env.GOOGLE_APPLICATION_CREDENTIALS = path.join(
   __dirname,
-  "../tensile-spirit-433609-q4-ca0a5f9adada.json"
+  "enter your dialogflow json key path here"
 );
 
 
-const serviceAccount = require('enter path to your service account key file here');
+const serviceAccount = require('enter your firebase account key path here');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "enter your database URL here" 
