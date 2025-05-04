@@ -71,6 +71,6 @@ The goal is to **assist users in tracking fitness easily** through an engaging c
 1. **Clone** the repository:
 
 ```bash
-git clone https://github.com/yourusername/bmi-ai-chatbot.git
+https://github.com/shreyansh2341/AI-Based-BMI-Calculation.git
 
 Author Shreyansh Rai GitHub: @shreyansh2341
